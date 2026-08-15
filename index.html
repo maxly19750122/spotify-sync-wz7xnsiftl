@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>曲リスト同期</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1DB954">
+<link rel="icon" href="icons/icon-192.png">
+<style>
+  html, body {
+    margin: 0;
+    height: 100%;
+    background: #121212;
+    color: #ffffff;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  #app {
+    text-align: center;
+    padding: 24px;
+    width: 100%;
+    max-width: 320px;
+  }
+  #syncBtn {
+    width: 160px;
+    height: 160px;
+    border-radius: 50%;
+    border: none;
+    background: #1DB954;
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+  }
+  #syncBtn:active {
+    background: #169c46;
+  }
+  #syncBtn:disabled {
+    background: #555555;
+  }
+  #status {
+    margin-top: 24px;
+    font-size: 15px;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+  <button id="syncBtn">同期する</button>
+  <div id="status"></div>
+</div>
+<script>
+  var GAS_URL = 'https://script.google.com/macros/s/AKfycbz30PHUU0BQRVtk-n-xzSsT9uceodzJ37Oy9E_Ny54f-OMjK12uf4feZATzodrHuxk/exec';
+  var SYNC_KEY = 'b3fwhijycsq72lvu1p6mk45z';
+
+  var btn = document.getElementById('syncBtn');
+  var status = document.getElementById('status');
+
+  btn.addEventListener('click', function () {
+    btn.disabled = true;
+    status.textContent = '同期中…';
+    fetch(GAS_URL + '?action=sync&key=' + encodeURIComponent(SYNC_KEY))
+      .then(function (res) { return res.json(); })
+      .then(function (data) {
+        status.textContent = data.ok ? data.message : ('エラー: ' + data.message);
+      })
+      .catch(function (err) {
+        status.textContent = '通信エラー: ' + err;
+      })
+      .finally(function () {
+        btn.disabled = false;
+      });
+  });
+
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('service-worker.js');
+  }
+</script>
+</body>
+</html>
